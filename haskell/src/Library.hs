@@ -1,0 +1,7 @@
+module Library where
+
+f x 
+ | x < -1 = -1
+ | -1 <= x && x <= 1 = 1
+ | x > 1 = -1
+  
