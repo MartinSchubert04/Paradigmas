@@ -1,0 +1,28 @@
+{-
+Teniendo un juego de cartas con superhéroes y para cada superhéroe se tiene información de sus poderes.
+
+Se pide extender las cartas para incluir tags y definir funciones para cambiarlos
+
+Dado un mazo de cartas:
+Obtener los nombres de las cartas que comienzan con “bat”
+Averiguar si hay cartas con los tags demasiado largos.
+Corregir las cartas a las que pusieron tag #alguien en lugar de #alien
+-}
+
+data Carta = Carta {
+    nombre :: String,
+    velocidad :: Int,
+    alutra :: Int,
+    peso :: Int,
+    fuerza :: Int,
+    peleas :: Int,
+    tags :: [String]
+} deriving (Eq, Show)
+
+cartas :: [Carta]
+cartas = {
+    
+}
+
+quitarTag :: String
+quitarTag = 
