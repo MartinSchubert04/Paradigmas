@@ -40,7 +40,7 @@ queObraEscribioEstaPersona :: Autor -> [Obra] -> Obra
 queObraEscribioEstaPersona autor obras = head (filter (elem autor . autores) obras)
 
 estaPersonaEscribioUnaObra :: Autor -> [Obra] -> Bool
-estaPersonaEscribioUnaObra autor = any (\ob -> elem autor (autores ob))
+estaPersonaEscribioUnaObra autor = any (elem autor . autores )
 
 existeEstaObra :: Titulo -> [Obra] -> Bool
 existeEstaObra tituloObra = any (\ob -> tituloObra == titulo ob)
