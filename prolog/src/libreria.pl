@@ -14,16 +14,16 @@
 *       - escribio(_, it) -> true
 */
 
-escribio (elsaBornemann, socorro).
-escribio (neilGaiman, sandman).
-escribio (alanMoore, watchmen).
-escribio (neilGaiman, americanGods).
-escribio (neilGaiman, buensoPresagios).
-escribio (terryPratchett, buensoPresagios).
-escribio (brianAzarello, cienBalas).
-escribio (warenElis, planetary).
-escribio (frankMiller, elCaballeroOscuroRegresa).
-escribio (frankMiller, batmanAnioUno).
+escribio(elsaBornemann, socorro).
+escribio(neilGaiman, sandman).
+escribio(alanMoore, watchmen).
+escribio(neilGaiman, americanGods).
+escribio(neilGaiman, buensoPresagios).
+escribio(terryPratchett, buensoPresagios).
+escribio(brianAzarello, cienBalas).
+escribio(warenElis, planetary).
+escribio(frankMiller, elCaballeroOscuroRegresa).
+escribio(frankMiller, batmanAnioUno).
 escribio(isaacAsimov, fundacion).
 escribio(isaacAsimov, yoRobot).
 escribio(isaacAsimov, elFinDeLaEternidad).
@@ -38,7 +38,3 @@ escribio(jorgeLuisBorges, ficciones).
 escribio(jorgeLuisBorges, elAleph).
 escribio(horacioQuiroga, cuentosDeLaSelva).
 escribio(horacioQuiroga, cuentosDeLocuraAmorYMuerte).
-
-
-escritoPor(Y, X) :- escribio(X, Y). 
-
