@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lector de Apuntes — Paradigmas</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #7ee787;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --sidebar-w: 280px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #sidebar-header {
+    padding: 18px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #sidebar-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  #open-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--accent);
+    color: #0d1117;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  #open-btn:hover { opacity: .85; }
+
+  #file-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+    transition: background .1s, border-color .1s;
+    word-break: break-word;
+  }
+  .file-item:hover { background: rgba(255,255,255,.05); }
+  .file-item.active {
+    background: rgba(88,166,255,.1);
+    border-left-color: var(--accent);
+    color: var(--accent);
+  }
+  .file-item .icon { font-size: 14px; flex-shrink: 0; }
+
+  #sidebar-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── MAIN ── */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #topbar {
+    height: 48px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 12px;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  #topbar h1 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #search-wrap {
+    position: relative;
+  }
+  #search {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 5px 10px 5px 30px;
+    font-size: 13px;
+    width: 200px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  #search:focus { border-color: var(--accent); }
+  #search-wrap::before {
+    content: "🔍";
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    pointer-events: none;
+  }
+
+  /* ── DROP ZONE (shown when no files) ── */
+  #drop-zone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: var(--muted);
+    border: 2px dashed var(--border);
+    margin: 32px;
+    border-radius: 16px;
+    transition: border-color .2s, background .2s;
+    cursor: pointer;
+  }
+  #drop-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(88,166,255,.06);
+    color: var(--accent);
+  }
+  #drop-zone .drop-icon { font-size: 52px; }
+  #drop-zone h3 { font-size: 18px; font-weight: 600; }
+  #drop-zone p { font-size: 14px; }
+
+  /* ── CONTENT ── */
+  #content-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 48px 64px;
+    display: none;
+    scroll-behavior: smooth;
+  }
+
+  /* ── MARKDOWN STYLES ── */
+  #content h1, #content h2, #content h3,
+  #content h4, #content h5, #content h6 {
+    color: var(--text);
+    margin: 1.6em 0 .6em;
+    line-height: 1.25;
+  }
+  #content h1 { font-size: 2em; border-bottom: 1px solid var(--border); padding-bottom: .4em; }
+  #content h2 { font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: .3em; }
+  #content h3 { font-size: 1.25em; }
+  #content h4 { font-size: 1.05em; }
+
+  #content p { line-height: 1.75; margin-bottom: 1em; color: #cdd9e5; }
+
+  #content a { color: var(--accent); text-decoration: none; }
+  #content a:hover { text-decoration: underline; }
+
+  #content ul, #content ol {
+    padding-left: 2em;
+    margin-bottom: 1em;
+    line-height: 1.75;
+    color: #cdd9e5;
+  }
+  #content li { margin-bottom: .3em; }
+
+  #content blockquote {
+    border-left: 4px solid var(--accent);
+    padding: 8px 16px;
+    margin: 1em 0;
+    background: rgba(88,166,255,.07);
+    border-radius: 0 6px 6px 0;
+    color: var(--muted);
+  }
+
+  #content code {
+    background: rgba(110,118,129,.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: .9em;
+    font-family: "Cascadia Code", "Fira Code", monospace;
+    color: #e5c07b;
+  }
+
+  #content pre {
+    background: #161b22;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 1em 0;
+    font-size: .87em;
+    line-height: 1.5;
+  }
+  #content pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+    border-radius: 0;
+  }
+
+  #content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+    font-size: .9em;
+  }
+  #content th {
+    background: var(--surface);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    color: var(--accent);
+  }
+  #content td {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    color: #cdd9e5;
+  }
+  #content tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+
+  #content hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2em 0;
+  }
+
+  #content img { max-width: 100%; border-radius: 6px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ── WIDTH SLIDER ── */
+  #width-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+  #width-wrap label {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  #width-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 110px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  #width-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  #width-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  #width-val {
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  #content {
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ── TOC BUTTON ── */
+  #toc-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+  }
+  #toc-btn:hover { color: var(--text); border-color: var(--muted); }
+
+  /* ── TOC PANEL ── */
+  #toc-panel {
+    display: none;
+    width: 240px;
+    min-width: 240px;
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    overflow-y: auto;
+    padding: 16px 0;
+  }
+  #toc-panel.open { display: block; }
+  #toc-panel h3 { font-size: 11px; text-transform: uppercase; letter-spacing:.5px; color: var(--muted); padding: 0 16px 8px; }
+  .toc-item {
+    display: block;
+    padding: 5px 16px;
+    font-size: 12.5px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color .1s;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .toc-item:hover { color: var(--text); }
+  .toc-item.h1 { font-weight: 600; color: var(--text); }
+  .toc-item.h2 { padding-left: 24px; }
+  .toc-item.h3 { padding-left: 36px; font-size: 12px; }
+
+  /* hidden file input */
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<input type="file" id="file-input" multiple accept=".md,.txt">
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div id="sidebar-header">
+    <h2>📚 Apuntes</h2>
+    <button id="open-btn">＋ Abrir archivos</button>
+  </div>
+  <div id="file-list"></div>
+  <div id="sidebar-footer">Drag &amp; drop en el área principal</div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <h1 id="file-title">—</h1>
+    <div id="search-wrap">
+      <input id="search" type="text" placeholder="Buscar en el texto…" autocomplete="off">
+    </div>
+    <div id="width-wrap">
+      <label>↔</label>
+      <input id="width-slider" type="range" min="400" max="1800" step="50" value="800">
+      <span id="width-val">800px</span>
+    </div>
+    <button id="toc-btn">☰ Índice</button>
+  </div>
+
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <!-- DROP ZONE -->
+    <div id="drop-zone">
+      <div class="drop-icon">📂</div>
+      <h3>Arrastrá tus archivos acá</h3>
+      <p>O usá el botón "Abrir archivos" en el panel izquierdo</p>
+      <p style="font-size:12px;margin-top:4px;">Soporta <strong>.md</strong> y <strong>.txt</strong></p>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="content-wrap">
+      <div id="content"></div>
+    </div>
+
+    <!-- TOC -->
+    <div id="toc-panel">
+      <h3>Contenido</h3>
+      <div id="toc-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const files = new Map(); // name -> text
+let activeFile = null;
+
+// ── Width slider ──
+const widthSlider = document.getElementById('width-slider');
+const widthVal    = document.getElementById('width-val');
+const contentEl   = document.getElementById('content');
+
+function applyWidth(px) {
+  const label = px >= 1800 ? 'Full' : px + 'px';
+  widthVal.textContent = label;
+  contentEl.style.maxWidth = px >= 1800 ? 'none' : px + 'px';
+}
+
+const savedWidth = localStorage.getItem('lector-width');
+if (savedWidth) { widthSlider.value = savedWidth; applyWidth(+savedWidth); } else { applyWidth(800); }
+
+widthSlider.addEventListener('input', () => {
+  applyWidth(+widthSlider.value);
+  localStorage.setItem('lector-width', widthSlider.value);
+});
+
+const fileInput  = document.getElementById('file-input');
+const openBtn    = document.getElementById('open-btn');
+const fileList   = document.getElementById('file-list');
+const dropZone   = document.getElementById('drop-zone');
+const contentWrap= document.getElementById('content-wrap');
+const content    = document.getElementById('content');
+const fileTitle  = document.getElementById('file-title');
+const tocBtn     = document.getElementById('toc-btn');
+const tocPanel   = document.getElementById('toc-panel');
+const tocList    = document.getElementById('toc-list');
+const search     = document.getElementById('search');
+
+// ── marked config ──
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+  highlight: (code, lang) => {
+    if (lang && hljs.getLanguage(lang)) {
+      return hljs.highlight(code, { language: lang }).value;
+    }
+    return hljs.highlightAuto(code).value;
+  }
+});
+
+// ── Load files ──
+function loadFiles(fileObjs) {
+  Array.from(fileObjs).forEach(f => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      files.set(f.name, e.target.result);
+      renderSidebar();
+      if (!activeFile) showFile(f.name);
+    };
+    reader.readAsText(f);
+  });
+}
+
+openBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => loadFiles(e.target.files));
+
+// ── Drag & drop on drop zone ──
+function setupDrop(el) {
+  el.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  el.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    loadFiles(e.dataTransfer.files);
+  });
+}
+setupDrop(dropZone);
+setupDrop(document.getElementById('main')); // whole main area
+
+dropZone.addEventListener('click', () => fileInput.click());
+
+// ── Sidebar ──
+function renderSidebar() {
+  fileList.innerHTML = '';
+  [...files.keys()].sort().forEach(name => {
+    const div = document.createElement('div');
+    div.className = 'file-item' + (name === activeFile ? ' active' : '');
+    div.innerHTML = `<span class="icon">📄</span><span>${name}</span>`;
+    div.addEventListener('click', () => showFile(name));
+    fileList.appendChild(div);
+  });
+}
+
+// ── Render markdown ──
+function showFile(name) {
+  activeFile = name;
+  renderSidebar();
+  fileTitle.textContent = name;
+
+  const raw = files.get(name);
+  content.innerHTML = marked.parse(raw);
+
+  // syntax highlight
+  content.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+
+  // add IDs to headings for TOC
+  content.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach((el, i) => {
+    el.id = 'h-' + i;
+  });
+
+  dropZone.style.display = 'none';
+  contentWrap.style.display = 'block';
+  contentWrap.scrollTop = 0;
+
+  buildTOC();
+  clearSearch();
+}
+
+// ── TOC ──
+function buildTOC() {
+  tocList.innerHTML = '';
+  content.querySelectorAll('h1,h2,h3').forEach(el => {
+    const a = document.createElement('a');
+    a.className = `toc-item ${el.tagName.toLowerCase()}`;
+    a.textContent = el.textContent;
+    a.href = '#';
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    tocList.appendChild(a);
+  });
+}
+
+tocBtn.addEventListener('click', () => {
+  tocPanel.classList.toggle('open');
+  tocBtn.textContent = tocPanel.classList.contains('open') ? '✕ Cerrar' : '☰ Índice';
+});
+
+// ── Search / highlight ──
+let searchMarks = [];
+
+function clearSearch() {
+  searchMarks.forEach(m => {
+    const parent = m.parentNode;
+    if (parent) {
+      parent.replaceChild(document.createTextNode(m.textContent), m);
+      parent.normalize();
+    }
+  });
+  searchMarks = [];
+}
+
+function doSearch(term) {
+  clearSearch();
+  if (!term || term.length < 2) return;
+
+  const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let n;
+  while ((n = walker.nextNode())) nodes.push(n);
+
+  const re = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  nodes.forEach(node => {
+    if (!re.test(node.textContent)) return;
+    re.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let last = 0, m2;
+    while ((m2 = re.exec(node.textContent)) !== null) {
+      frag.appendChild(document.createTextNode(node.textContent.slice(last, m2.index)));
+      const mark = document.createElement('mark');
+      mark.style.cssText = 'background:#e3b34199;color:inherit;border-radius:2px;padding:0 1px;';
+      mark.textContent = m2[0];
+      searchMarks.push(mark);
+      frag.appendChild(mark);
+      last = m2.index + m2[0].length;
+    }
+    frag.appendChild(document.createTextNode(node.textContent.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+
+  if (searchMarks.length > 0) {
+    searchMarks[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+let searchTimer;
+search.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => doSearch(search.value), 300);
+});
+
+search.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { search.value = ''; clearSearch(); }
+  if (e.key === 'Enter') {
+    // cycle through marks
+    if (searchMarks.length === 0) return;
+    const idx = searchMarks.findIndex(m => {
+      const r = m.getBoundingClientRect();
+      return r.top > 80;
+    });
+    const target = searchMarks[idx === -1 ? 0 : idx];
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+</script>
+</body>
+</html>
