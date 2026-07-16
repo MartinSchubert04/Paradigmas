@@ -21,6 +21,9 @@ esHijoDe(archie, henry).
 esHijoDe(willy, carlosIII).
 esHijoDe(jorge, willy).
 
+x = 4.
+x = 2.
+
 
 esNietoDe(X, Y) :- esHijoDe(X, Z), esHijoDe(Z, Y).
 esPrimoDe(X, Y) :- esNietoDe(X, Z), esNietoDe(Y, Z), esHijoDe(X, PadreX), esHijoDe(Y, PadreY), PadreX \= PadreY.
