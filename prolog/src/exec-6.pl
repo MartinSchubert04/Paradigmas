@@ -22,11 +22,11 @@ descalificado(alemania).
 
 goleada(X, Y) :- 
     partido(X, GolesX, Y, GolesY), 
-    GolesX - GolesY >= 3.
+    GolesX - GolesY > 3.
 
 goleada(X, Y) :- 
     partido(X, GolesX, Y, GolesY), 
-    GolesY - GolesX >= 3.
+    GolesY - GolesX > 3.
 
 africanosConGoles(X) :- 
     continente(X, africa), 

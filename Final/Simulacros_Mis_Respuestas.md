@@ -77,10 +77,19 @@ Tip: cronometrate — 25-30 min por pregunta, como en el final real.
 **1.** Enumere las características principales del paradigma declarativo. ¿Cómo lo materializan de forma distinta Haskell y Prolog, y en qué paradigma más general se apoyan ambos?
 
 > Tu respuesta:
+>
+> - Se explica el "Que" y no el "como", es decir, no se detalla el proceso si no que se realiza una peticion de lo que se desea
+> - Ausencia de estructuras de control (if/while)
+> - Inmutabilidad
+> - Transparencial referencial
 
 **2.** ¿Cuáles son las diferencias entre una Tupla y un Data en Haskell? Enumere por lo menos 3 diferencias.
 
 > Tu respuesta:
+>
+> - La tupla accede a sun datos mediante indice y data accede llamando a las propiedades directamente
+> - El data posee contructor a diferencia de la tupla que no.
+> -
 
 **3.** Indique la relación que existe entre las Guardas (`|`) de Haskell y las condiciones aritméticas dentro de las reglas de Prolog. Enumere 3 guardas típicas de Haskell y para cada una indique cómo se expresaría esa misma condición dentro de una regla de Prolog.
 
@@ -104,27 +113,39 @@ Tip: cronometrate — 25-30 min por pregunta, como en el final real.
 
 **1.** Enumere las características principales de los lenguajes multiparadigma (híbridos). Dé dos ejemplos y para cada uno indique de qué paradigmas derivan sus construcciones principales.
 
-> Tu respuesta:
+> Caracteristicas:
+>
+> - Capacidad de resolver problemas de diferentes formas
+> - La versatilidad permite tener o no diferentes restricciones como inmutabilidad, restriccion de tipos, no tener o si tener estado global.
+>
+> Ejemplos son Scala que mezcla funcinal con orientado a objetos de forma nativa, Python que implementa el imperativo, OOP y funcinal tambien (lambda functions), y C++ que es imperativo y OOP.
 
 **2.** ¿Cuáles son las diferencias entre una consulta individual y una consulta existencial en Prolog? Enumere por lo menos 3 diferencias.
 
-> Tu respuesta:
+> - Las diferencial son que una busca saber la veracidad de una relacion (individual) y la otra saber si existe por lo menos una relacion que cumpla en la base de conocimientos (existencial).
+> - Una necesita la intanciacion de todos sus parametros (individual) y la otra utiliza variables (existencial)
+> -
 
 **3.** Indique la relación que existe entre las funciones de lista de Haskell (map, filter, head, tail) y los predicados de lista de Prolog (member, length, append, reverse). Enumere 3 funciones de Haskell y para cada una indique el predicado de Prolog más parecido.
 
-> Tu respuesta:
+>
 
 **4.** ¿Cuál es la diferencia entre el operador "=" (unificación) y el operador "==" (comparación) en Prolog?
 
-> Tu respuesta:
+> El operador "=" es una declaracion explicita de la unificacion en cual el motor de Prolog interpreta que ambos objetos quedan ligadas y por lo tanto estructuralmente iguales, siempre que la variable no este previamente asignada. Por otro lado el "==" se utiliza para saber si se cumple una igualdad de valor para una variable ya ligada
 
 **5.** ¿A qué se denomina Inversibilidad de un predicado y qué relación tiene con la Unificación? Dé un ejemplo con el predicado padre/2.
 
-> Tu respuesta:
+> La inversibilidad es la capacidad de que todas las variables puedan estar libres para ese predicado, para el caso de pader/2 seria algo asi:
+> padre(messi, mbappe).
+> entonces se puede dar cualquiera de estas 3 consultas validas
+> padre(X, mbappe).
+> padre(messi, X).
+> padre(X, Y).
 
 **6.** La Recursividad existe en Haskell sobre funciones, ¿funciona de la misma manera en Prolog sobre predicados? Explique y relacione el caso base de una función recursiva con el hecho (fact) base de un predicado recursivo.
 
-> Tu respuesta:
+>
 
 ---
 
@@ -136,7 +157,14 @@ Tip: cronometrate — 25-30 min por pregunta, como en el final real.
 
 **2.** ¿Cuáles son las diferencias entre Evaluación Lazy y Evaluación Eager? Enumere por lo menos 4 diferencias.
 
-> Tu respuesta:
+> Las diferencias:
+>
+> - Lazy no evalua hasta que se requiera y Eager evalua exactamente cuando esta escrita en el codigo, por ejem:
+>   f(int x, funct raiseError()) return x;
+>   en este caso lazy no evaluaria la funcion tomada como parametro cuando se llame a f(), en cambio eager llamaria a raiseError() que haria fallar la ejecucion
+> - Lazy permite trabajar estruturas infinitas, ya que utiliza hasta el punto que se requiere
+> - Exposicion a error, al no evaluar todo lazy puede tener error que no se ejecutan y pueden romper en cualquier momento, al contrario eager directamente fallaria y permite ser mas debbugeable
+> - Con eager tiene un orden de evaluacion predicible y explicito, Lazy tiene un orden por la dependencia de datos, no por orden textual de codigo
 
 **3.** Indique la relación que existe entre findall/bagof/setof de Prolog y las funciones de orden superior de Haskell que devuelven colecciones (map, filter). Enumere los 3 predicados de Prolog mencionados y para cada uno indique con qué combinación de funciones de Haskell se lograría un resultado equivalente.
 
@@ -186,11 +214,11 @@ Tip: cronometrate — 25-30 min por pregunta, como en el final real.
 
 ## Registro de notas (opcional)
 
-| Simulacro | Fecha rendido | Nota aprox. | Temas a repasar |
-| --------- | ------------- | ----------- | --------------- |
-| 1         |               |             |                 |
+| Simulacro | Fecha rendido | Nota aprox. | Temas a repasar                                                                                                                                                           |
+| --------- | ------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1         |               |             |                                                                                                                                                                           |
 | 2         | 2026-07-13    | 16/30       | Motor de inferencia vs. inferencia de tipos; deriva lógico (cláusulas de Horn, no álgebra de Bool); tuplas/data ↔ estructuras compuestas Prolog; orden superior en Prolog |
-| 3         |               |             |                 |
-| 4         |               |             |                 |
-| 5         |               |             |                 |
-| 6         |               |             |                 |
+| 3         |               |             |                                                                                                                                                                           |
+| 4         |               |             |                                                                                                                                                                           |
+| 5         |               |             |                                                                                                                                                                           |
+| 6         |               |             |                                                                                                                                                                           |
